@@ -1,24 +1,22 @@
 import logging
-
+from app.core.logger.custom_logging import CustomizeLogger
+from pathlib import Path
+from contextlib import asynccontextmanager
+import shutil
 import sentry_sdk
 from debug_toolbar.middleware import DebugToolbarMiddleware
 from fastapi import FastAPI
 from mangum import Mangum
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
-from sentry_sdk.integrations.logging import LoggingIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+import os
+
+# from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from starlette.middleware.cors import CORSMiddleware
 
 # from app.api.endpoints import auth, query
 from app.api.endpoints import query
 from app.core.config import settings
-from app.core.logger import get_logger
-
-from app.core.database import engine
-from app.models._base import Base
-# loggingセットアップ
-
-logger = get_logger(__name__)
+from app.core.llama_index_funcs import initialize_index
 
 
 class NoParsingFilter(logging.Filter):
@@ -26,25 +24,49 @@ class NoParsingFilter(logging.Filter):
         return not record.getMessage().find("/docs") >= 0
 
 
-# /docsのログが大量に表示されるのを防ぐ
-logging.getLogger("uvicorn.access").addFilter(NoParsingFilter())
+# define the lifespan event
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # when start up
+    ## prepare the temp folders for LlamaIndex
+    folders = ["documents", "vector_store"]
+    for folder in folders:
+        if not os.path.exists(folder):
+            os.mkdir("documents")
+            os.mkdir("vector_store")
+    with open(f"{folders[0]}/place_holder.txt", "w") as f:
+        f.write("placeholder")
+    ## Run the initialization of Llama
+    initialize_index()
+    yield
+    # when shut down
+    ## delete the temp folders
+    shutil.rmtree("documents")
+    shutil.rmtree("vector_store")
 
-sentry_logging = LoggingIntegration(level=logging.INFO, event_level=logging.ERROR)
 
-Base.metadata.create_all(bind=engine, checkfirst=True) # if you want to narrow down the tables to create, use 'tables=[models.<Class>]
+# initialize FastAPI instance
+def create_app() -> FastAPI:
+    # define the app instance
+    app = FastAPI(
+        title=f"[{settings.ENV}]{settings.TITLE}",
+        version=settings.VERSION,
+        debug=settings.DEBUG or False,
+        lifespan=lifespan
+        # root_path=f"{settings.API_GATEWAY_STAGE_PATH}/",
+    )
+    # Set up custom logging
+    config_path = Path(__file__).with_name("logging_config.json")
+    app.logger = CustomizeLogger.make_logger(config_path)
+    return app
 
-app = FastAPI(
-    title=f"[{settings.ENV}]{settings.TITLE}",
-    version=settings.VERSION,
-    debug=settings.DEBUG or False,
-    # root_path=f"{settings.API_GATEWAY_STAGE_PATH}/",
-)
 
+app = create_app()
 
 if settings.SENTRY_SDK_DNS:
     sentry_sdk.init(
         dsn=settings.SENTRY_SDK_DNS,
-        integrations=[sentry_logging, SqlalchemyIntegration()],
+        # integrations=[SqlalchemyIntegration()],
         environment=settings.ENV,
     )
 
@@ -60,20 +82,20 @@ app.add_middleware(
 )
 
 
-
 @app.get("/", tags=["info"])
 def get_info() -> dict[str, str]:
     return {"title": settings.TITLE, "version": settings.VERSION}
 
 
 # app.include_router(auth.router, tags=["Auth"], prefix="/auth")
-app.include_router(query.router, tags=["Query"], prefix="/users")
+app.include_router(query.router, tags=["Query"], prefix="/query")
 
 if settings.DEBUG:
     app.add_middleware(
         DebugToolbarMiddleware,
         panels=["debug_toolbar.panels.sqlalchemy.SQLAlchemyPanel"],
     )
+
 
 if settings.IS_API_GATEWAY:
     handler = Mangum(app)

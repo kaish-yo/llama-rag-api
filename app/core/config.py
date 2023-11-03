@@ -19,16 +19,14 @@ class Settings(BaseSettings):
     ]
     BASE_DIR_PATH: str = str(Path(__file__).parent.parent.absolute())
     ROOT_DIR_PATH: str = str(Path(__file__).parent.parent.parent.absolute())
-    SERVER_URI: str
-    DATABASE_NAME: str
-    DATABASE_USERNAME: str = "username"
-    DATABASE_PASSWORD: str = "password"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     SECRET_KEY: str = "secret"
     LOGGER_CONFIG_PATH: str = os.path.join(BASE_DIR_PATH, "logger_config.yaml")
     SENTRY_SDK_DNS: str = ""
     MIGRATIONS_DIR_PATH: str = os.path.join(ROOT_DIR_PATH, "alembic")
-    IS_API_GATEWAY: bool = False 
+    IS_API_GATEWAY: bool = False
+    OPENAI_API_KEY: str = "not_set"
+    TIME_ZONE: str = "Asia/Tokyo"
 
     class Config:
         env_file = ".env"

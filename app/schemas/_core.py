@@ -18,13 +18,13 @@ class BaseSchema(BaseModel):
     #     全ての項目に対して、pre処理を行いたい場合の例
     #     '''
     #     if isinstance(v, Any):
-      # @validator("*", pre=True)
+    # @validator("*", pre=True)
     # def split_comma(cls, v):
     #     '''
     #     カンマでsplitする例
     #     '''
     #     if isinstance(v, str):
-      class Config:
+    class Config:
         """
         Converts camel case <-> snake case
         # キャメルケース　<-> スネークケースの自動変換
@@ -56,11 +56,7 @@ class PagingQueryIn(BaseSchema):
         return 30 if not v >= 1 else v
 
     def get_offset(self) -> int:
-        return (
-            (self.page - 1) * self.per_page
-            if self.page >= 1 and self.per_page >= 1
-            else 0
-        )
+        return (self.page - 1) * self.per_page if self.page >= 1 and self.per_page >= 1 else 0
 
     def apply_to_query(self, query: Any) -> Any:
         offset = self.get_offset()
