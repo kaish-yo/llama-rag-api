@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     IS_API_GATEWAY: bool = False
     OPENAI_API_KEY: str = "not_set"
     TIME_ZONE: str = "Asia/Tokyo"
+    KEY_VAULT_NAME: str = "not_set"
 
     class Config:
         env_file = ".env"

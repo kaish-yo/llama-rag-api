@@ -25,6 +25,9 @@ RUN apt update && apt install -y \
 #     apt update && \
 #     ACCEPT_EULA=Y apt install -y mssql-tools18
 
+# environement variables
+ENV ENV=local
+
 # change workind directory before copying source files
 WORKDIR /usr/src
 

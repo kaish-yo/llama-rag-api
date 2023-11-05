@@ -17,6 +17,7 @@ from starlette.middleware.cors import CORSMiddleware
 from app.api.endpoints import query
 from app.core.config import settings
 from app.core.llama_index_funcs import initialize_index
+from app.core.key_valut import load_secrets_to_env_var
 
 
 class NoParsingFilter(logging.Filter):
@@ -24,10 +25,12 @@ class NoParsingFilter(logging.Filter):
         return not record.getMessage().find("/docs") >= 0
 
 
-# define the lifespan event
+# define lifespan events
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # when start up
+    ## Run the initial loading of secrets if it is online
+    load_secrets_to_env_var()
     ## prepare the temp folders for LlamaIndex
     folders = ["documents", "vector_store"]
     for folder in folders:
@@ -38,7 +41,9 @@ async def lifespan(app: FastAPI):
         f.write("placeholder")
     ## Run the initialization of Llama
     initialize_index()
+
     yield
+
     # when shut down
     ## delete the temp folders
     shutil.rmtree("documents")
