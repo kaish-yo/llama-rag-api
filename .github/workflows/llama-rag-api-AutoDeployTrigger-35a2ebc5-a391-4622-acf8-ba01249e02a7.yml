@@ -4,15 +4,14 @@ name: Trigger auto deployment for llama-rag-api
 on:
   # Automatically trigger it when detected changes in repo
   push:
-    branches: 
-      [ main ]
+    branches: [main]
     paths:
-    - '**'
-    - '.github/workflows/llama-rag-api-AutoDeployTrigger-35a2ebc5-a391-4622-acf8-ba01249e02a7.yml'
+      - "**"
+      - ".github/workflows/llama-rag-api-AutoDeployTrigger-35a2ebc5-a391-4622-acf8-ba01249e02a7.yml"
 
-  # Allow manual trigger 
+  # Allow manual trigger
   workflow_dispatch:
-      
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -29,15 +28,11 @@ jobs:
       - name: Build and push container image to registry
         uses: azure/container-apps-deploy-action@v1
         with:
-          appSourcePath: ${{ github.workspace }} 
+          appSourcePath: ${{ github.workspace }}
           registryUrl: aiplatformdockerregistry.azurecr.io
           registryUsername: ${{ secrets.LLAMARAGAPI_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.LLAMARAGAPI_REGISTRY_PASSWORD }}
           containerAppName: llama-rag-api
           resourceGroup: ai-platform
           imageToBuild: aiplatformdockerregistry.azurecr.io/llama-rag-api:${{ github.sha }}
-        env:
-          KEY_VAULT_NAME: ${{ secrets.KEY_VAULT_NAME }}
-
-     
-
+          environmentVariables: "KEY_VAULT_NAME=secretref:KEY_VAULT_NAME"
