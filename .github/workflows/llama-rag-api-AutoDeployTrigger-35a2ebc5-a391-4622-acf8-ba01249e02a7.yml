@@ -35,4 +35,4 @@ jobs:
           containerAppName: llama-rag-api
           resourceGroup: ai-platform
           imageToBuild: aiplatformdockerregistry.azurecr.io/llama-rag-api:${{ github.sha }}
-          environmentVariables: "KEY_VAULT_NAME=secretref:KEY_VAULT_NAME"
+          environmentVariables: "KEY_VAULT_NAME=secretref:key-valut-name"
