@@ -15,7 +15,7 @@ def load_secrets_to_env_var():
 
         # Specify all the secrets you want to integrate into this app as environment variables
         # the dict is {"<Secret name in AKV>":"<environmet variable name you name in this app>"}
-        secrets = [{"OPENAI-API-KEY": "OPENAI_API_KEY"}]
+        secrets = {"OPENAI-API-KEY": "OPENAI_API_KEY"}
 
         logger.info(f"Retrieving your secret from {keyVaultName}.")
 
