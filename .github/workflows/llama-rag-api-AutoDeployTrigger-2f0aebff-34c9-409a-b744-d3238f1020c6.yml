@@ -21,10 +21,15 @@ jobs:
       - name: Checkout to the branch
         uses: actions/checkout@v2
 
+      - name: Install azure-cli
+        # You may pin to the exact commit or the version.
+        # uses: pietrobolcato/install-azure-cli-action@9a10af1be5e3eb7931f48c0290364a131e7ecd70
+        uses: pietrobolcato/install-azure-cli-action@v1.0.1
+    
       - name: Azure Login
         uses: azure/login@v1
         with:
-          creds: $'{{ secrets.LLAMARAGAPI_AZURE_CREDENTIALS }}'
+          creds: ${{ secrets.LLAMARAGAPI_AZURE_CREDENTIALS }}
 
       - name: Build and push container image to registry
         uses: azure/container-apps-deploy-action@v1
