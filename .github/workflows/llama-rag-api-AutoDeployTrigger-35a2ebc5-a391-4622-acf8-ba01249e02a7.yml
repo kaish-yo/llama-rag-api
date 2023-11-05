@@ -36,7 +36,8 @@ jobs:
           containerAppName: llama-rag-api
           resourceGroup: ai-platform
           imageToBuild: aiplatformdockerregistry.azurecr.io/llama-rag-api:${{ github.sha }}
-          
+        env:
+          KEY_VAULT_NAME: ${{ secrets.KEY_VAULT_NAME }}
 
      
 
