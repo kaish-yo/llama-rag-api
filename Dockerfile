@@ -11,6 +11,9 @@ RUN apt update && apt install -y \
     
 
 # # define environment variables
+ARG KEY_VAULT_NAME
+ENV KEY_VAULT_NAME=$KEY_VAULT_NAME
+
 # ARG DATABASE_USERNAME
 # ENV DATABASE_USERNAME=$DATABASE_USERNAME
 
