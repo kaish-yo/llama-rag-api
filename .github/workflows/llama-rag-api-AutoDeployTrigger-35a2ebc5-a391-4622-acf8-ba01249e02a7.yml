@@ -1,0 +1,42 @@
+name: Trigger auto deployment for llama-rag-api
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/llama-rag-api-AutoDeployTrigger-35a2ebc5-a391-4622-acf8-ba01249e02a7.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.LLAMARAGAPI_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: aiplatformdockerregistry.azurecr.io
+          registryUsername: ${{ secrets.LLAMARAGAPI_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.LLAMARAGAPI_REGISTRY_PASSWORD }}
+          containerAppName: llama-rag-api
+          resourceGroup: ai-platform
+          imageToBuild: aiplatformdockerregistry.azurecr.io/llama-rag-api:${{ github.sha }}
+          
+
+     
+
