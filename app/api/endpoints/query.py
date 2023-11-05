@@ -1,6 +1,6 @@
 # import app.core.logger
 import os
-from fastapi import APIRouter, UploadFile, Request, Response, status
+from fastapi import APIRouter, BackgroundTasks, UploadFile, Request, Response, status
 from app.core.llama_index_funcs import add_documents, query_index
 from app.schemas.queries import QARequest
 import logging
@@ -30,7 +30,7 @@ def generate(question: QARequest, request: Request, response: Response):
 
 
 @router.post("/document")
-def upload_document(file: UploadFile, request: Request, response: Response):
+async def upload_document(file: UploadFile, request: Request, response: Response, background_tasks: BackgroundTasks):
     """
     # 概要
     文書検索の元データとなるドキュメントをアップロードする
@@ -41,11 +41,16 @@ def upload_document(file: UploadFile, request: Request, response: Response):
     if not os.path.exists(doc_dir):
         os.makedirs(doc_dir)
 
-    # Save the uploaded file to the local directory.
-    with open(f"{doc_dir}/{file.filename}", "wb+") as f:
-        f.write(file.file.read())
-    add_documents(file.filename)
-    logger.info("New documents added to vector store.")
+    # Define the background task
+    def task_function():
+        # Save the uploaded file to the local directory.
+        with open(f"{doc_dir}/{file.filename}", "wb+") as f:
+            f.write(file.file.read())
+        add_documents(file.filename)
+        logger.info("New documents added to vector store.")
+
+    background_tasks.add_task(task_function)  # add the task to the background task
+
     return {"filename": file.filename}
 
 
