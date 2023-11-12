@@ -12,10 +12,11 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     VERSION: str = "0.0.1"
     CORS_ORIGINS: list[str] = [
-        "http://localhost:8000",
-        "http://127.0.0.1:8000",
-        "http://localhost:3000",
-        "http://localhost:3333",
+        # "http://localhost:8000",
+        # "http://127.0.0.1:8000",
+        # "http://localhost:3000",
+        # "http://localhost:3333",
+        "*"
     ]
     BASE_DIR_PATH: str = str(Path(__file__).parent.parent.absolute())
     ROOT_DIR_PATH: str = str(Path(__file__).parent.parent.parent.absolute())
