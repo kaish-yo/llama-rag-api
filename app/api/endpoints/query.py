@@ -1,10 +1,11 @@
 # import app.core.logger
 import os
 from fastapi import APIRouter, BackgroundTasks, UploadFile, Request, Response, status
-from app.core.llama_index_funcs import add_documents, query_index
+from app.core.llama_index_funcs import add_documents, initialize_index, query_index
 from app.schemas.queries import QARequest
 import logging
 from llama_index import SimpleDirectoryReader
+import shutil
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +22,11 @@ def generate(question: QARequest, request: Request, response: Response):
     """
     logger = request.app.logger
     try:
+        logger.info(f"{question=}")
         result = query_index(question.query)
         return {"success": True, "answer": result}
     except Exception as e:
-        logger.exception(f"querying the document failed with the following error:\n{result}")
+        logger.exception(f"querying the document failed with the following error:\n{e}")
         response.status_code = status.HTTP_400_BAD_REQUEST
         return {"success": False}
 
@@ -54,19 +56,26 @@ async def upload_document(file: UploadFile, request: Request, response: Response
     return {"filename": file.filename}
 
 
-# @router.delete("/document", status_code=status.HTTP_200_OK)
-# def delete_document(filename: str, request: Request, response: Response):
-#     """
-#     # 概要
-#     アップロードしたファイルを削除する
-#     """
-#     logger = request.app.logger  # load the logger instance
-#     doc_dir = "documents"
-#     try:
-#         os.remove(f"{doc_dir}/{filename}")
-#     except Exception as e:
-#         response.status_code = status.HTTP_400_BAD_REQUEST
-#         # request.app.logger.exception(f"Failed to the file named:{filename}\nThe original error is:\n{e}")
-#         logger.exception(f"Failed to the file named:{filename}\nThe original error is:\n{e}")
-#         return {"success": False, "message": "Failed to delete the file."}
-#     return {"success": False, "message": f"Successfully deleted the file: {filename}"}
+@router.delete("/documents", status_code=status.HTTP_200_OK)
+def reset_documents(request: Request, response: Response):
+    """
+    # 概要
+    ドキュメントDBをリセットする
+    """
+    logger = request.app.logger  # load the logger instance
+    try:
+        shutil.rmtree("documents")
+        shutil.rmtree("vector_store")
+
+        os.mkdir("documents")
+        os.mkdir("vector_store")
+        with open(f"documents/place_holder.txt", "w") as f:
+            f.write("placeholder")
+        initialize_index()
+
+    except Exception as e:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        # request.app.logger.exception(f"Failed to the file named:{filename}\nThe original error is:\n{e}")
+        logger.exception(e)
+        return {"success": False, "message": "Failed to reset the document database."}
+    return {"success": False, "message": "Document database has been reset."}
