@@ -29,10 +29,10 @@ jobs:
         uses: azure/container-apps-deploy-action@v1
         with:
           appSourcePath: ${{ github.workspace }}
-          registryUrl: aiplatformdockerregistry.azurecr.io
+          registryUrl: docker.io
           registryUsername: ${{ secrets.LLAMARAGAPI_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.LLAMARAGAPI_REGISTRY_PASSWORD }}
           containerAppName: llama-rag-api
           resourceGroup: ai-platform
-          imageToBuild: aiplatformdockerregistry.azurecr.io/llama-rag-api:${{ github.sha }}
+          imageToBuild: ${{ secrets.LLAMARAGAPI_REGISTRY_NAME}}:${{ github.sha }}
           environmentVariables: "KEY_VAULT_NAME=secretref:key-valut-name"

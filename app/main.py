@@ -81,7 +81,8 @@ app.add_middleware(SentryAsgiMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[str(origin) for origin in settings.CORS_ORIGINS],
-    allow_origin_regex=r"^https?:\/\/([\w\-\_]{1,}\.|)example\.com",
+    # allow_origin_regex=r"^https?:\/\/([\w\-\_]{1,}\.|)example\.com",
+    allow_origin_regex="*",
     allow_methods=["*"],
     allow_headers=["*"],
 )
